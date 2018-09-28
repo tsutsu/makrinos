@@ -1,0 +1,8 @@
+%{
+  "cowlib": {:hex, :cowlib, "2.5.1", "1481324d35b2844767cf988d8e4ce42f0f3b11c29a9e5a430aaa608d4757e3c6", [:rebar3], [], "hexpm"},
+  "gun": {:hex, :gun, "1.1.0", "66be4ebb3a8018b2ca0216eb0c5fe89820f3ce3610e9ec0652f525690956f69f", [:rebar3], [{:cowlib, "~> 2.5.1", [hex: :cowlib, repo: "hexpm", optional: false]}], "hexpm"},
+  "jason": {:hex, :jason, "1.1.1", "d3ccb840dfb06f2f90a6d335b536dd074db748b3e7f5b11ab61d239506585eb2", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
+  "machine_gun": {:hex, :machine_gun, "0.1.2", "a1aead9468aa3ea19849e57c578dc794e8d74c0de3e25fefec51700b9730d892", [:mix], [{:gun, "~> 1.1", [hex: :gun, repo: "hexpm", optional: false]}, {:poolboy, "~> 1.5", [hex: :poolboy, repo: "hexpm", optional: false]}], "hexpm"},
+  "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], [], "hexpm"},
+  "procket": {:hex, :procket, "0.9.3", "593e907645307bc854ce3532f3f9c07987d8dc9848180cd2ee408fd92b22cc1e", [:rebar3], [], "hexpm"},
+}
