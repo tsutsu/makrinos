@@ -80,41 +80,41 @@ defmodule Makrinos.HTTPAdapter do
   end
 
   # raise on logic errors; return on environment errors; return if unsure
-  def batch_error(401, _), do: {:unreachable, :endpoint, :forbidden}
-  def batch_error(404, _), do: {:unreachable, :endpoint, :not_found}
-  def batch_error(500, error_msg), do: {:server_error, 500, error_msg}
-  def batch_error(502, _), do: {:unreachable, :peer, :gateway_error}
-  def batch_error(503, _), do: {:unreachable, :peer, :overload}
+  def batch_error(401, _), do: {:error, {:unreachable, :endpoint, :forbidden}}
+  def batch_error(404, _), do: {:error, {:unreachable, :endpoint, :not_found}}
+  def batch_error(500, error_msg), do: {:error, {:server_error, 500, error_msg}}
+  def batch_error(502, _), do: {:error, {:unreachable, :peer, :gateway_error}}
+  def batch_error(503, _), do: {:error, {:unreachable, :peer, :overload}}
   def batch_error({_, -32700}, _), do: raise Makrinos.RPCError, "client sent malformed JSON"
   def batch_error({_, -32600}, _), do: raise Makrinos.RPCError, "invalid request"
   def batch_error({_, -32601}, _), do: raise Makrinos.RPCError, "RPC endpoint not available"
   def batch_error({_, -32602}, _), do: raise Makrinos.RPCError, "invalid parameters"
   def batch_error({_, -32603}, msg), do: raise Makrinos.RPCError, {"internal JSON-RPC error", msg}
   def batch_error({_, code}, error_msg) when code >= -32099 and code <= -32000 do
-    {:server_error, code, error_msg}
+    {:error, {:server_error, code, error_msg}}
   end
   def batch_error({_, code}, error_msg) do
-    {:unknown_error, code, error_msg}
+    {:error, {:unknown_error, code, error_msg}}
   end
   def batch_error(code, msg) when code >= 400 and code < 500 do
     raise Makrinos.RPCError, {:client_error, msg}
   end
   def batch_error(code, msg) when code >= 500 and code < 600 do
-    {:server_error, msg}
+    {:error, {:server_error, msg}}
   end
-  def batch_error(code, msg), do: {:unknown_error, code, msg}
+  def batch_error(code, msg), do: {:error, {:unknown_error, code, msg}}
 
 
   # client may be attempting methods to determine existence, so raise only if invalid syntactically
   def req_error(-32700, _), do: raise Makrinos.RPCError, "client sent malformed JSON"
   def req_error(-32600, _), do: raise Makrinos.RPCError, "invalid request"
-  def req_error(-32601, _), do: {:unreachable, :endpoint, :not_found}
-  def req_error(-32602, _), do: :invalid_parameters
-  def req_error(-32603, msg), do: {:rpc_error, msg}
+  def req_error(-32601, _), do: {:error, {:unreachable, :endpoint, :not_found}}
+  def req_error(-32602, _), do: {:error, :invalid_parameters}
+  def req_error(-32603, msg), do: {:error, {:rpc_error, msg}}
   def req_error(code, error_msg) when code >= -32099 and code <= -32000 do
-    {:server_error, code, error_msg}
+    {:error, {:server_error, code, error_msg}}
   end
   def req_error(code, error_msg) do
-    {:unknown_error, code, error_msg}
+    {:error, {:unknown_error, code, error_msg}}
   end
 end
