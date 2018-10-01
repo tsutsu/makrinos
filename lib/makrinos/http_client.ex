@@ -17,7 +17,7 @@ defmodule Makrinos.HTTPClient do
     end
 
     req_headers = auth_headers ++ [
-      {"host", "localhost"},
+      {"host", conn_uri.host},
       {"content-type", "application/json"}
     ]
 
