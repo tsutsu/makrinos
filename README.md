@@ -5,7 +5,7 @@ An Elixir JSON-RPC client library focusing on high-throughput, low-overhead mess
 In service of lowering overhead, Makrinos supports:
 
 * the JSON-RPC batched-request API
-* a Unix domain-socket (UDS) transport, as well as an HTTP transport
+* both HTTP and (line-delimited) TCP transports, including TCP Unix Domain Socket support
 
 Makrinos aims to be the fastest Elixir JSON-RPC client. If another client is faster, that's a bug.
 
@@ -23,7 +23,7 @@ end
 
 ## Usage
 
-Makrinos has a protocol, `Makrinos.Client`, which is implemented by the concrete clients that implement each transport, namely `Makrinos.HTTPClient` and `Makrinos.UDSClient`.
+Makrinos has a protocol, `Makrinos.Client`, which is implemented by the concrete clients that implement each transport, namely `Makrinos.HTTPClient` and `Makrinos.TCPClient`.
 
 ### Creating a client
 
@@ -34,10 +34,14 @@ http_client = Makrinos.HTTPClient.get("http://user:pass@host:4581")
 ```
 
 ```elixir
-uds_client = Makrinos.UDSClient.get("/path/to/socket")
+tcp_client = Makrinos.TCPClient.get("/path/to/socket") # or "file:///path/to/socket"
 ```
 
-Each client transport implements memoization differently, but to roughly the same effect. The UDS client is actually memoized (i.e. you are retrieving the PID of a process based on the passed path), while the HTTP client returns a new `%Makrinos.HTTPClient{}` data-structure, but using it to make calls will rely on a per-destination connection pool (from [`machine_gun`](https://github.com/petrohi/machine_gun)), which serves to decrease the cost of building new connections.
+```elixir
+tcp_client = Makrinos.TCPClient.get("tcp://localhost:8546")
+```
+
+Each client transport implements memoization differently, but to roughly the same effect. The TCP client is actually memoized (i.e. you are retrieving the PID of a process based on the passed path), while the HTTP client returns a new `%Makrinos.HTTPClient{}` data-structure, but using it to make calls will rely on a per-destination connection pool (from [`machine_gun`](https://github.com/petrohi/machine_gun)), which serves to decrease the cost of building new connections.
 
 ##### Optimizing client creation
 
@@ -115,8 +119,8 @@ A list of non-exception error responses you may see in response to a `call/3` or
 | `{:unreachable, :endpoint, :not_found}` | An HTTP 404 error was encountered while making the request over an HTTP transport.<br /><br />If returned for a particular request within a batched request, the server considered the particular request to require an unavailable resource. |
 | `{:unreachable, :peer, :gateway_error}` | An HTTP 502 error was encountered while making the request over an HTTP transport. |
 | `{:unreachable, :peer, :overload}` | An HTTP 503 error was encountered while making the request over an HTTP transport.<br /><br />If you are using a circuit-breaker library like [ExternalService](https://github.com/jvoegele/external_service), it is recommended to write a wrapper function to coalesce this error into the circuit breaker's `{:error, :fuse_blown}` error, since they should be handled the same way by callers. |
-| `{:unreachable, :peer, :no_connection}` | The transport failed to submit the request to the remote.<br /><br />For the HTTP transport, this corresponds to a DNS resolution error, as well as to any TCP-level failures before managing to POST the request. <br />For the UDS transport, this corresponds to a non-existent or un-openable socket file. |
-| `{:unreachable, :peer, :not_configured}` | The transport was not configured correctly.<br /><br />Both the HTTP and UDS transports allow the developer to pass a `nil` parameter to `get/1`. This will return a dummy client that responds to all requests with `{:unreachable, :peer, :not_configured}`. This can be useful when your JSON-RPC API access feeds an *optional* feature, and you wish to allow the system administrator the choice of whether to configure the client (and so enable the feature) or not. |
+| `{:unreachable, :peer, :no_connection}` | The transport failed to submit the request to the remote.<br /><br />For the HTTP transport, this corresponds to a DNS resolution error, as well as to any TCP-level failures before managing to POST the request. <br />For the TCP transport, this can correspond to a non-existent or un-openable socket file. |
+| `{:unreachable, :peer, :not_configured}` | The transport was not configured correctly.<br /><br />Both the HTTP and TCP transports allow the developer to pass a `nil` parameter to `get/1`. This will return a dummy client that responds to all requests with `{:unreachable, :peer, :not_configured}`. This can be useful when your JSON-RPC API access feeds an *optional* feature, and you wish to allow the system administrator the choice of whether to configure the client (and so enable the feature) or not. |
 | `{:server_error, code, msg}`     | Either the transport layer, or the JSON-RPC protocol layer, has failed on the server side. An HTTP 500 error is reported as a `{:server_error, 500, msg}`. JSON-RPC error codes between `-32099` and `-32000` are also reported as server errors. |
 | `{:rpc_error, msg}`              | The JSON-RPC protocol layer has failed on the client side, but not due to programmer error. |
 | `{:unknown_error, code, msg}`    | Any other HTTP or JSON-RPC error code will be presented as an `:unknown_error`. |

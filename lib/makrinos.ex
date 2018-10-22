@@ -11,8 +11,9 @@ defmodule Makrinos do
     case scheme do
       "http" -> Makrinos.HTTPClient.get(uri)
       "https" -> Makrinos.HTTPClient.get(uri)
-      "file" -> Makrinos.UDSClient.get(uri)
-      nil -> Makrinos.UDSClient.get(uri)
+      "tcp" -> Makrinos.TCPClient.get(uri)
+      "file" -> Makrinos.TCPClient.get(uri)
+      nil -> Makrinos.TCPClient.get(uri)
     end
   end
 

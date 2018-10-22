@@ -21,8 +21,7 @@ defmodule Makrinos.MixProject do
   defp deps do
     [
       {:jason, "~> 1.1"},
-      {:machine_gun, "~> 0.1.2"},
-      {:procket, "~> 0.9.3"}
+      {:machine_gun, "~> 0.1.2"}
     ]
   end
 end
